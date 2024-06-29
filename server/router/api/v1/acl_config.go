@@ -26,7 +26,6 @@ func isUnauthorizeAllowedMethod(fullMethodName string) bool {
 }
 
 var allowedMethodsOnlyForAdmin = map[string]bool{
-	"/memos.api.v1.UserService/CreateUser":                      true,
 	"/memos.api.v1.WorkspaceSettingService/SetWorkspaceSetting": true,
 }
 

@@ -451,26 +451,6 @@ paths:
             $ref: '#/definitions/googlerpcStatus'
       tags:
         - UserService
-    post:
-      summary: CreateUser creates a new user.
-      operationId: UserService_CreateUser
-      responses:
-        "200":
-          description: A successful response.
-          schema:
-            $ref: '#/definitions/v1User'
-        default:
-          description: An unexpected error response.
-          schema:
-            $ref: '#/definitions/googlerpcStatus'
-      parameters:
-        - name: user
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/v1User'
-      tags:
-        - UserService
   /api/v1/users:search:
     get:
       summary: SearchUsers searches users by filter.
@@ -1697,8 +1677,6 @@ paths:
               avatarUrl:
                 type: string
               description:
-                type: string
-              password:
                 type: string
               rowStatus:
                 $ref: '#/definitions/v1RowStatus'

@@ -135,36 +135,6 @@ func (s *APIV1Service) GetUserAvatarBinary(ctx context.Context, request *v1pb.Ge
 	return httpBody, nil
 }
 
-func (s *APIV1Service) CreateUser(ctx context.Context, request *v1pb.CreateUserRequest) (*v1pb.User, error) {
-	currentUser, err := s.GetCurrentUser(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get user: %v", err)
-	}
-	if currentUser.Role != store.RoleHost {
-		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
-	}
-	if !util.UIDMatcher.MatchString(strings.ToLower(request.User.Username)) {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid username: %s", request.User.Username)
-	}
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.User.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "failed to generate password hash").SetInternal(err)
-	}
-
-	user, err := s.Store.CreateUser(ctx, &store.User{
-		Username:     request.User.Username,
-		Role:         convertUserRoleToStore(request.User.Role),
-		Email:        request.User.Email,
-		Nickname:     request.User.Nickname,
-		PasswordHash: string(passwordHash),
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create user: %v", err)
-	}
-
-	return convertUserFromStore(user), nil
-}
-
 func (s *APIV1Service) UpdateUser(ctx context.Context, request *v1pb.UpdateUserRequest) (*v1pb.User, error) {
 	userID, err := ExtractUserIDFromName(request.User.Name)
 	if err != nil {

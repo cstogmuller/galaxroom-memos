@@ -32,14 +32,6 @@ service UserService {
     option (google.api.http) = {get: "/file/{name=users/*}/avatar"};
     option (google.api.method_signature) = "name";
   }
-  // CreateUser creates a new user.
-  rpc CreateUser(CreateUserRequest) returns (User) {
-    option (google.api.http) = {
-      post: "/api/v1/users"
-      body: "user"
-    };
-    option (google.api.method_signature) = "user";
-  }
   // UpdateUser updates a user.
   rpc UpdateUser(UpdateUserRequest) returns (User) {
     option (google.api.http) = {
@@ -151,11 +143,6 @@ message GetUserAvatarBinaryRequest {
   // The raw HTTP body is bound to this field.
   google.api.HttpBody http_body = 2;
 }
-
-message CreateUserRequest {
-  User user = 1;
-}
-
 message UpdateUserRequest {
   User user = 1 [(google.api.field_behavior) = REQUIRED];
 
