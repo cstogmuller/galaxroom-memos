@@ -137,50 +137,6 @@ func (s *APIV1Service) doSignIn(ctx context.Context, user *store.User, expireTim
 	return nil
 }
 
-func (s *APIV1Service) SignUp(ctx context.Context, request *v1pb.SignUpRequest) (*v1pb.User, error) {
-	if !s.Profile.Public {
-		return nil, status.Errorf(codes.PermissionDenied, "sign up is not allowed")
-	}
-
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to generate password hash, err: %s", err))
-	}
-
-	create := &store.User{
-		Username:     request.Username,
-		Nickname:     request.Username,
-		PasswordHash: string(passwordHash),
-	}
-	if !util.UIDMatcher.MatchString(strings.ToLower(create.Username)) {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid username: %s", create.Username)
-	}
-
-	hostUserType := store.RoleHost
-	existedHostUsers, err := s.Store.ListUsers(ctx, &store.FindUser{
-		Role: &hostUserType,
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to list users, err: %s", err))
-	}
-	if len(existedHostUsers) == 0 {
-		// Change the default role to host if there is no host user.
-		create.Role = store.RoleHost
-	} else {
-		create.Role = store.RoleUser
-	}
-
-	user, err := s.Store.CreateUser(ctx, create)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to create user, err: %s", err))
-	}
-
-	if err := s.doSignIn(ctx, user, time.Now().Add(AccessTokenDuration)); err != nil {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to sign in, err: %s", err))
-	}
-	return convertUserFromStore(user), nil
-}
-
 func (s *APIV1Service) SignOut(ctx context.Context, _ *v1pb.SignOutRequest) (*emptypb.Empty, error) {
 	accessToken, ok := ctx.Value(accessTokenContextKey).(string)
 	// Try to delete the access token from the store.
