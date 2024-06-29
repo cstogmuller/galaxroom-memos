@@ -97,15 +97,8 @@ const UpdateAccountDialog: React.FC<Props> = ({ destroy }: Props) => {
   };
 
   const handleSaveBtnClick = async () => {
-    if (state.username === "") {
-      toast.error(t("message.fill-all"));
-      return;
-    }
-
     try {
       const updateMask = [];
-      if (!isEqual(currentUser.name.replace(UserNamePrefix, ""), state.username)) {
-        updateMask.push("username");
       }
       if (!isEqual(currentUser.nickname, state.nickname)) {
         updateMask.push("nickname");
@@ -122,7 +115,6 @@ const UpdateAccountDialog: React.FC<Props> = ({ destroy }: Props) => {
       await userStore.updateUser(
         UserPb.fromPartial({
           name: currentUser.name,
-          username: state.username,
           nickname: state.nickname,
           email: state.email,
           avatarUrl: state.avatarUrl,
