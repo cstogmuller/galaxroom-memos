@@ -41,37 +41,6 @@ paths:
           format: int32
       tags:
         - ActivityService
-  /api/v1/auth/signin:
-    post:
-      summary: SignIn signs in the user with the given username and password.
-      operationId: AuthService_SignIn
-      responses:
-        "200":
-          description: A successful response.
-          schema:
-            $ref: '#/definitions/v1User'
-        default:
-          description: An unexpected error response.
-          schema:
-            $ref: '#/definitions/googlerpcStatus'
-      parameters:
-        - name: username
-          description: The username to sign in with.
-          in: query
-          required: false
-          type: string
-        - name: password
-          description: The password to sign in with.
-          in: query
-          required: false
-          type: string
-        - name: neverExpire
-          description: Whether the session should never expire.
-          in: query
-          required: false
-          type: boolean
-      tags:
-        - AuthService
   /api/v1/auth/signin/sso:
     post:
       summary: SignInWithSSO signs in the user with the given SSO code.
@@ -118,32 +87,6 @@ paths:
           description: An unexpected error response.
           schema:
             $ref: '#/definitions/googlerpcStatus'
-      tags:
-        - AuthService
-  /api/v1/auth/signup:
-    post:
-      summary: SignUp signs up the user with the given username and password.
-      operationId: AuthService_SignUp
-      responses:
-        "200":
-          description: A successful response.
-          schema:
-            $ref: '#/definitions/v1User'
-        default:
-          description: An unexpected error response.
-          schema:
-            $ref: '#/definitions/googlerpcStatus'
-      parameters:
-        - name: username
-          description: The username to sign up with.
-          in: query
-          required: false
-          type: string
-        - name: password
-          description: The password to sign up with.
-          in: query
-          required: false
-          type: string
       tags:
         - AuthService
   /api/v1/auth/status:
