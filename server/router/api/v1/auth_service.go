@@ -39,35 +39,6 @@ func (s *APIV1Service) GetAuthStatus(ctx context.Context, _ *v1pb.GetAuthStatusR
 	return convertUserFromStore(user), nil
 }
 
-func (s *APIV1Service) SignIn(ctx context.Context, request *v1pb.SignInRequest) (*v1pb.User, error) {
-	user, err := s.Store.GetUser(ctx, &store.FindUser{
-		Username: &request.Username,
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to find user by username %s", request.Username))
-	}
-	if user == nil {
-		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("user not found with username %s", request.Username))
-	} else if user.RowStatus == store.Archived {
-		return nil, status.Errorf(codes.PermissionDenied, fmt.Sprintf("user has been archived with username %s", request.Username))
-	}
-
-	// Compare the stored hashed password, with the hashed version of the password that was received.
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.Password)); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "unmatched email and password")
-	}
-
-	expireTime := time.Now().Add(AccessTokenDuration)
-	if request.NeverExpire {
-		// Set the expire time to 100 years.
-		expireTime = time.Now().Add(100 * 365 * 24 * time.Hour)
-	}
-	if err := s.doSignIn(ctx, user, expireTime); err != nil {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to sign in, err: %s", err))
-	}
-	return convertUserFromStore(user), nil
-}
-
 func (s *APIV1Service) SignInWithSSO(ctx context.Context, request *v1pb.SignInWithSSORequest) (*v1pb.User, error) {
 	identityProvider, err := s.Store.GetIdentityProvider(ctx, &store.FindIdentityProvider{
 		ID: &request.IdpId,
