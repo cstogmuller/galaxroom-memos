@@ -23,9 +23,6 @@ const SignIn = () => {
   const workspaceSettingStore = useWorkspaceSettingStore();
   const userStore = useUserStore();
   const actionBtnLoadingState = useLoading(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
   const [identityProviderList, setIdentityProviderList] = useState<IdentityProvider[]>([]);
   const workspaceGeneralSetting =
     workspaceSettingStore.getWorkspaceSettingByKey(WorkspaceSettingKey.GENERAL).generalSetting || WorkspaceGeneralSetting.fromPartial({});
@@ -38,55 +35,12 @@ const SignIn = () => {
     fetchIdentityProviderList();
   }, []);
 
-  useEffect(() => {
-    if (commonContext.profile.mode === "demo") {
-      setUsername("memos-demo");
-      setPassword("secret");
-    }
-  }, [commonContext.profile.mode]);
-
-  const handleUsernameInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value as string;
-    setUsername(text);
-  };
-
-  const handlePasswordInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value as string;
-    setPassword(text);
-  };
-
   const handleLocaleSelectChange = (locale: Locale) => {
     commonContext.setLocale(locale);
   };
 
   const handleAppearanceSelectChange = (appearance: Appearance) => {
     commonContext.setAppearance(appearance);
-  };
-
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    handleSignInButtonClick();
-  };
-
-  const handleSignInButtonClick = async () => {
-    if (username === "" || password === "") {
-      return;
-    }
-
-    if (actionBtnLoadingState.isLoading) {
-      return;
-    }
-
-    try {
-      actionBtnLoadingState.setLoading();
-      await authServiceClient.signIn({ username, password, neverExpire: remember });
-      await userStore.fetchCurrentUser();
-      navigateTo("/");
-    } catch (error: any) {
-      console.error(error);
-      toast.error((error as ClientError).details || "Failed to sign in.");
-    }
-    actionBtnLoadingState.setFinish();
   };
 
   const handleSignInWithIdentityProvider = async (identityProvider: IdentityProvider) => {
@@ -116,67 +70,8 @@ const SignIn = () => {
             {workspaceGeneralSetting.customProfile?.title || "Memos"}
           </p>
         </div>
-        <form className="w-full mt-2" onSubmit={handleFormSubmit}>
-          <div className="flex flex-col justify-start items-start w-full gap-4">
-            <div className="w-full flex flex-col justify-start items-start">
-              <span className="leading-8 text-gray-600">{t("common.username")}</span>
-              <Input
-                className="w-full"
-                size="lg"
-                type="text"
-                readOnly={actionBtnLoadingState.isLoading}
-                placeholder={t("common.username")}
-                value={username}
-                onChange={handleUsernameInputChanged}
-                required
-              />
-            </div>
-            <div className="w-full flex flex-col justify-start items-start">
-              <span className="leading-8 text-gray-600">{t("common.password")}</span>
-              <Input
-                className="w-full"
-                size="lg"
-                type="password"
-                readOnly={actionBtnLoadingState.isLoading}
-                placeholder={t("common.password")}
-                value={password}
-                onChange={handlePasswordInputChanged}
-                required
-              />
-            </div>
-          </div>
-          <div className="flex flex-row justify-start items-center w-full mt-6">
-            <Checkbox
-              className="dark:!text-gray-400"
-              label={t("common.remember-me")}
-              checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
-            />
-          </div>
-          <div className="flex flex-row justify-end items-center w-full mt-6">
-            <Button
-              className="w-full"
-              size="md"
-              type="submit"
-              disabled={actionBtnLoadingState.isLoading}
-              loading={actionBtnLoadingState.isLoading}
-              onClick={handleSignInButtonClick}
-            >
-              {t("common.sign-in")}
-            </Button>
-          </div>
-        </form>
-        {commonContext.profile.public && (
-          <p className="w-full mt-4 text-sm">
-            <span className="dark:text-gray-500">{t("auth.sign-up-tip")}</span>
-            <Link to="/auth/signup" className="cursor-pointer ml-2 text-blue-600 hover:underline" unstable_viewTransition>
-              {t("common.sign-up")}
-            </Link>
-          </p>
-        )}
         {identityProviderList.length > 0 && (
           <>
-            <Divider className="!my-4">{t("common.or")}</Divider>
             <div className="w-full flex flex-col space-y-2">
               {identityProviderList.map((identityProvider) => (
                 <Button
