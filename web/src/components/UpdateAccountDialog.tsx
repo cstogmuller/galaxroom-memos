@@ -165,11 +165,6 @@ const UpdateAccountDialog: React.FC<Props> = ({ destroy }: Props) => {
           )}
         </div>
         <p className="text-sm">
-          {t("common.username")}
-          <span className="text-sm text-gray-400 ml-1">({t("setting.account-section.username-note")})</span>
-        </p>
-        <Input className="w-full" value={state.username} onChange={handleUsernameChanged} />
-        <p className="text-sm">
           {t("common.nickname")}
           <span className="text-sm text-gray-400 ml-1">({t("setting.account-section.nickname-note")})</span>
         </p>
