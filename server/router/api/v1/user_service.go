@@ -206,13 +206,6 @@ func (s *APIV1Service) UpdateUser(ctx context.Context, request *v1pb.UpdateUserR
 		} else if field == "role" {
 			role := convertUserRoleToStore(request.User.Role)
 			update.Role = &role
-		} else if field == "password" {
-			passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.User.Password), bcrypt.DefaultCost)
-			if err != nil {
-				return nil, echo.NewHTTPError(http.StatusInternalServerError, "failed to generate password hash").SetInternal(err)
-			}
-			passwordHashStr := string(passwordHash)
-			update.PasswordHash = &passwordHashStr
 		} else if field == "row_status" {
 			rowStatus := convertRowStatusToStore(request.User.RowStatus)
 			update.RowStatus = &rowStatus
