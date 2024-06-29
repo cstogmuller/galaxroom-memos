@@ -99,7 +99,6 @@ const UpdateAccountDialog: React.FC<Props> = ({ destroy }: Props) => {
   const handleSaveBtnClick = async () => {
     try {
       const updateMask = [];
-      }
       if (!isEqual(currentUser.nickname, state.nickname)) {
         updateMask.push("nickname");
       }
