@@ -97,10 +97,6 @@ const MemberSection = () => {
     });
   };
 
-  const handleChangePasswordClick = (user: User) => {
-    showChangeMemberPasswordDialog(user);
-  };
-
   const handleArchiveUserClick = (user: User) => {
     showCommonDialog({
       title: t("setting.member-section.archive-member"),
@@ -218,9 +214,6 @@ const MemberSection = () => {
                           <Icon.MoreVertical className="w-4 h-auto" />
                         </MenuButton>
                         <Menu placement="bottom-end" size="sm">
-                          <MenuItem onClick={() => handleChangePasswordClick(user)}>
-                            {t("setting.account-section.change-password")}
-                          </MenuItem>
                           {user.rowStatus === RowStatus.ACTIVE ? (
                             <MenuItem onClick={() => handleArchiveUserClick(user)}>{t("setting.member-section.archive-member")}</MenuItem>
                           ) : (
