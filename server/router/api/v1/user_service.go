@@ -195,12 +195,7 @@ func (s *APIV1Service) UpdateUser(ctx context.Context, request *v1pb.UpdateUserR
 		UpdatedTs: &currentTs,
 	}
 	for _, field := range request.UpdateMask.Paths {
-		if field == "username" {
-			if !util.UIDMatcher.MatchString(strings.ToLower(request.User.Username)) {
-				return nil, status.Errorf(codes.InvalidArgument, "invalid username: %s", request.User.Username)
-			}
-			update.Username = &request.User.Username
-		} else if field == "nickname" {
+		if field == "nickname" {
 			update.Nickname = &request.User.Nickname
 		} else if field == "email" {
 			update.Email = &request.User.Email
