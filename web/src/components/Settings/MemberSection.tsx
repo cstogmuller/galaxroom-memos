@@ -38,64 +38,6 @@ const MemberSection = () => {
     setUsers(users);
   };
 
-  const handleUsernameInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setState({
-      ...state,
-      creatingUser: {
-        ...state.creatingUser,
-        username: event.target.value,
-      },
-    });
-  };
-
-  const handlePasswordInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setState({
-      ...state,
-      creatingUser: {
-        ...state.creatingUser,
-        password: event.target.value,
-      },
-    });
-  };
-
-  const handleUserRoleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setState({
-      ...state,
-      creatingUser: {
-        ...state.creatingUser,
-        role: event.target.value as User_Role,
-      },
-    });
-  };
-
-  const handleCreateUserBtnClick = async () => {
-    if (state.creatingUser.username === "" || state.creatingUser.password === "") {
-      toast.error(t("message.fill-all"));
-      return;
-    }
-
-    try {
-      await userServiceClient.createUser({
-        user: {
-          username: state.creatingUser.username,
-          password: state.creatingUser.password,
-          role: state.creatingUser.role,
-        },
-      });
-    } catch (error: any) {
-      toast.error(error.details);
-    }
-    await fetchUsers();
-    setState({
-      ...state,
-      creatingUser: User.fromPartial({
-        username: "",
-        password: "",
-        role: User_Role.USER,
-      }),
-    });
-  };
-
   const handleArchiveUserClick = (user: User) => {
     showCommonDialog({
       title: t("setting.member-section.archive-member"),
@@ -141,32 +83,6 @@ const MemberSection = () => {
 
   return (
     <div className="w-full flex flex-col gap-2 pt-2 pb-4">
-      <p className="font-medium text-gray-700 dark:text-gray-500">{t("setting.member-section.create-a-member")}</p>
-      <div className="w-auto flex flex-col justify-start items-start gap-2 border rounded-md py-2 px-3 dark:border-zinc-700">
-        <div className="flex flex-col justify-start items-start gap-1">
-          <span>{t("common.username")}</span>
-          <Input type="text" placeholder={t("common.username")} value={state.creatingUser.username} onChange={handleUsernameInputChange} />
-        </div>
-        <div className="flex flex-col justify-start items-start gap-1">
-          <span>{t("common.password")}</span>
-          <Input
-            type="password"
-            placeholder={t("common.password")}
-            value={state.creatingUser.password}
-            onChange={handlePasswordInputChange}
-          />
-        </div>
-        <div className="flex flex-col justify-start items-start gap-1">
-          <span>{t("common.role")}</span>
-          <RadioGroup orientation="horizontal" defaultValue={User_Role.USER} onChange={handleUserRoleInputChange}>
-            <Radio value={User_Role.USER} label="User" />
-            <Radio value={User_Role.ADMIN} label="Admin" />
-          </RadioGroup>
-        </div>
-        <div className="mt-2">
-          <Button onClick={handleCreateUserBtnClick}>{t("common.create")}</Button>
-        </div>
-      </div>
       <div className="w-full flex flex-row justify-between items-center mt-6">
         <div className="title-text">{t("setting.member-list")}</div>
       </div>
