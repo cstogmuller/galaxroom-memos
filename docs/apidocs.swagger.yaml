@@ -1747,8 +1747,6 @@ paths:
                 description: The system generated uid of the user.
               role:
                 $ref: '#/definitions/UserRole'
-              username:
-                type: string
               email:
                 type: string
               nickname:

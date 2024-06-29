@@ -15,7 +15,6 @@ type Props = DialogProps;
 
 interface State {
   avatarUrl: string;
-  username: string;
   nickname: string;
   email: string;
   description: string;
@@ -27,7 +26,6 @@ const UpdateAccountDialog: React.FC<Props> = ({ destroy }: Props) => {
   const userStore = useUserStore();
   const [state, setState] = useState<State>({
     avatarUrl: currentUser.avatarUrl,
-    username: currentUser.username,
     nickname: currentUser.nickname,
     email: currentUser.email,
     description: currentUser.description,
@@ -69,12 +67,6 @@ const UpdateAccountDialog: React.FC<Props> = ({ destroy }: Props) => {
   const handleNicknameChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPartialState({
       nickname: e.target.value as string,
-    });
-  };
-
-  const handleUsernameChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPartialState({
-      username: e.target.value as string,
     });
   };
 
