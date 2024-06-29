@@ -8,7 +8,6 @@ import { stringifyUserRole, useUserStore } from "@/store/v1";
 import { RowStatus } from "@/types/proto/api/v1/common";
 import { User, User_Role } from "@/types/proto/api/v1/user_service";
 import { useTranslate } from "@/utils/i18n";
-import showChangeMemberPasswordDialog from "../ChangeMemberPasswordDialog";
 import { showCommonDialog } from "../Dialog/CommonDialog";
 import Icon from "../Icon";
 

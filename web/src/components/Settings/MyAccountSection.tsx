@@ -3,7 +3,6 @@ import { memoServiceClient } from "@/grpcweb";
 import { downloadFileFromUrl } from "@/helpers/utils";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useTranslate } from "@/utils/i18n";
-import showChangePasswordDialog from "../ChangePasswordDialog";
 import Icon from "../Icon";
 import showUpdateAccountDialog from "../UpdateAccountDialog";
 import UserAvatar from "../UserAvatar";
