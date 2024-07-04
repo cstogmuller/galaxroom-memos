@@ -22,17 +22,22 @@
     "confirm": "Bestätigen",
     "create": "Erstellen",
     "database": "Datenbank",
+    "days": "Tage",
     "delete": "Löschen",
+    "description": "Beschreibung",
     "edit": "Bearbeiten",
     "email": "E-Mail",
     "explore": "Erkunden",
+    "file": "Datei",
     "filter": "Filter",
     "home": "Startseite",
     "image": "Bild",
+    "inbox": "Inbox",
     "language": "Sprache",
     "learn-more": "Mehr erfahren",
     "link": "Link",
     "mark": "Mark",
+    "memos": "Memos",
     "name": "Name",
     "new": "Neu",
     "nickname": "Nickname",
@@ -40,13 +45,17 @@
     "or": "oder",
     "password": "Passwort",
     "pin": "Anpinnen",
+    "pinned": "Angepinnt",
     "preview": "Vorschau",
     "profile": "Profil",
+    "remember-me": "Angemeldet bleiben",
     "rename": "Umbenennen",
     "reset": "Zurücksetzen",
     "resources": "Ressourcen",
     "restore": "Wiederherstellen",
+    "role": "Rolle",
     "save": "Speichern",
+    "search": "Suchen",
     "select": "Auswählen",
     "settings": "Einstellungen",
     "share": "Teilen",
@@ -54,6 +63,7 @@
     "sign-in-with": "Anmelden mit {{provider}}",
     "sign-out": "Abmelden",
     "sign-up": "Registrieren",
+    "statistics": "Statistiken",
     "tags": "Tags",
     "title": "Titel",
     "type": "Typ",
@@ -75,44 +85,62 @@
     "wed": "Mi"
   },
   "editor": {
-    "any-thoughts": "Ein Gedanke...",
+    "add-your-comment-here": "Was denkst du darüber?",
+    "any-thoughts": "Irgendwelche Gedanken...",
     "save": "Speichern"
+  },
+  "inbox": {
+    "memo-comment": "{{user}} hat einen Kommentar zu deinem {{memo}} hinterlassen."
   },
   "memo": {
     "archived-at": "Archiviert am",
     "comment": {
-      "self": "Kommentare"
+      "self": "Kommentare",
+      "write-a-comment": "Hinterlasse einen Kommentar"
     },
     "copy-link": "Link kopieren",
-    "delete-confirm": "Bist du sicher, dass du diese Notiz löschen möchtest?\n\nDIESE AKTION KANN NICHT RÜCKGÄNGIG GEMACHT WERDEN",
+    "count-memos-in-date": "{{count}} Memos in {{date}}",
+    "delete-confirm": "Bist du sicher, dass du dieses Memo löschen möchtest?\n\nDIESE AKTION KANN NICHT RÜCKGÄNGIG GEMACHT WERDEN",
     "delete-memo": "Memo löschen",
     "embed": "Einbinden",
     "fetch-more": "Klicke hier, um mehr zu laden",
     "fetching-data": "Lade Daten…",
     "no-archived-memos": "Keine archivierten Memos",
-    "search-placeholder": "Suche memos",
+    "search-placeholder": "Memos durchsuchen",
+    "show-more": "Mehr anzeigen",
     "view-detail": "Details anzeigen",
     "visibility": {
-      "disabled": "Öffentliche memos sind deaktiviert",
+      "disabled": "Öffentliche Memos sind deaktiviert",
       "private": "Nur für dich sichtbar",
       "protected": "Mitglieder",
       "public": "Öffentlich"
-    }
+    },
+    "links": "Links",
+    "to-do": "To-do",
+    "code": "Code"
   },
   "message": {
+    "archived-successfully": "Erfolgreich archiviert",
     "change-memo-created-time": "Erstellungszeitpunkt ändern",
     "copied": "Kopiert",
+    "deleted-successfully": "Erfolgreich gelöscht",
     "fill-all": "Bitte alle Felder ausfüllen.",
     "maximum-upload-size-is": "Die maximal zulässige Upload-Größe beträgt {{size}} MiB",
     "memo-not-found": "Memo nicht gefunden.",
     "new-password-not-match": "Neue Passwörter stimmen nicht überein.",
-    "no-data": "Keine Daten gefunden,.",
+    "no-data": "Keine Daten gefunden.",
     "password-changed": "Passwort geändert",
     "password-not-match": "Passwörter stimmen nicht überein",
     "restored-successfully": "Erfolgreich wiederhergestellt",
     "succeed-copy-link": "Link erfolgreich kopiert",
     "update-succeed": "Update erfolgreich",
     "user-not-found": "Nutzer nicht gefunden"
+  },
+  "reference": {
+    "add-references": "Verweise hinzufügen",
+    "embedded-usage": "Als eingebetteter Inhalt verwenden",
+    "no-memos-found": "Keine Memos gefunden",
+    "search-placeholder": "Inhalt suchen"
   },
   "resource": {
     "clear": "Löschen",
@@ -154,6 +182,7 @@
     "account-section": {
       "change-password": "Passwort ändern",
       "email-note": "Optional",
+      "export-memos": "Memos exportieren",
       "nickname-note": "Wird im Banner angezeigt",
       "openapi-reset": "OpenAPI Key zurücksetzen",
       "openapi-sample-post": "Hallo #memos von {{url}}",
@@ -257,7 +286,7 @@
       "disable-password-login": "Anmeldung mit Passwort deaktivieren",
       "disable-password-login-final-warning": "Bitte gebe \"CONFIRM\" ein, wenn du weißt, was du tust.",
       "disable-password-login-warning": "Dadurch wird die Passwortanmeldung für alle Benutzer deaktiviert. Es ist nicht möglich sich anzumelden, ohne diese Einstellung in der Datenbank rückgängig zu machen, wenn deine konfigurierten Provider ausfallen. Du musst auch besonders vorsichtig sein, wenn du einen Identitätsanbieter entfernst",
-      "disable-public-memos": "Öffentliche memos deaktivieren",
+      "disable-public-memos": "Öffentliche Memos deaktivieren",
       "display-with-updated-time": "Anzeige mit aktualisierter Zeit",
       "enable-password-login": "Anmeldung mit Passwort aktivieren",
       "enable-password-login-warning": "Dadurch wird die Passwortanmeldung für alle Benutzer aktiviert. Fahre nur fort, wenn du möchtest, dass sich Benutzer sowohl mit SSO als auch mit einem Passwort anmelden können",
@@ -268,6 +297,13 @@
   },
   "tag": {
     "all-tags": "Alle Tags",
-    "create-tag": "Tag erstellen"
+    "create-tag": "Tag erstellen",
+    "create-tags-guide": "Du kannst Tags erstellen, indem du `#tag` eingibst.",
+    "delete-confirm": "Willst du diesen Tag wirklich löschen? Alle zugehörigen Memos werden archiviert.",
+    "delete-tag": "Tag löschen",
+    "no-tag-found": "Kein Tag gefunden"
+  },
+  "timeline": {
+    "title": "Timeline"
   }
 }
