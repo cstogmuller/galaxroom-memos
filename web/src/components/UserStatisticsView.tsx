@@ -15,6 +15,7 @@ interface UserMemoStats {
   taskList: number;
   code: number;
   incompleteTasks: number;
+  days: number;
 }
 
 const UserStatisticsView = () => {
@@ -24,8 +25,7 @@ const UserStatisticsView = () => {
   const filterStore = useFilterStore();
   const [memoAmount, setMemoAmount] = useState(0);
   const [isRequesting, setIsRequesting] = useState(false);
-  const [memoStats, setMemoStats] = useState<UserMemoStats>({ link: 0, taskList: 0, code: 0, incompleteTasks: 0 });
-  const days = Math.ceil((Date.now() - currentUser.createTime!.getTime()) / 86400000);
+  const [memoStats, setMemoStats] = useState<UserMemoStats>({ link: 0, taskList: 0, code: 0, incompleteTasks: 0, days: 0 });
   const filter = filterStore.state;
 
   useAsyncEffect(async () => {
@@ -33,7 +33,7 @@ const UserStatisticsView = () => {
     const { properties } = await memoServiceClient.listMemoProperties({
       name: `memos/-`,
     });
-    const memoStats: UserMemoStats = { link: 0, taskList: 0, code: 0, incompleteTasks: 0 };
+    const memoStats: UserMemoStats = { link: 0, taskList: 0, code: 0, incompleteTasks: 0, days: 0 };
     properties.forEach((property) => {
       if (property.hasLink) {
         memoStats.link += 1;
@@ -48,6 +48,7 @@ const UserStatisticsView = () => {
         memoStats.incompleteTasks += 1;
       }
     });
+    memoStats.days = Math.ceil((Date.now() - currentUser.createTime!.getTime()) / 86400000);
     setMemoStats(memoStats);
     setMemoAmount(properties.length);
     setIsRequesting(false);
@@ -78,14 +79,14 @@ const UserStatisticsView = () => {
         <div className="w-full flex justify-between items-center">
           <div className="w-auto flex justify-start items-center">
             <Icon.CalendarDays className="w-4 h-auto mr-1" />
-            <span className="block text-base sm:text-sm">Days</span>
+            <span className="block text-base sm:text-sm">{t("memo.days")}</span>
           </div>
-          <span>{days}</span>
+          <span>{memoStats.days}</span>
         </div>
         <div className="w-full flex justify-between items-center">
           <div className="w-auto flex justify-start items-center">
             <Icon.Library className="w-4 h-auto mr-1" />
-            <span className="block text-base sm:text-sm">Memos</span>
+            <span className="block text-base sm:text-sm">{t("memo.memos")}</span>
           </div>
           {isRequesting ? <Icon.Loader className="animate-spin w-4 h-auto text-gray-400" /> : <span className="">{memoAmount}</span>}
         </div>
