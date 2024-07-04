@@ -3,7 +3,9 @@ import { useState } from "react";
 import useWindowScroll from "react-use/lib/useWindowScroll";
 import useResponsiveWidth from "@/hooks/useResponsiveWidth";
 import NavigationDrawer from "./NavigationDrawer";
+import { useWorkspaceSettingStore } from "@/store/v1";
 import { WorkspaceGeneralSetting } from "@/types/proto/api/v1/workspace_setting_service";
+import { WorkspaceSettingKey } from "@/types/proto/store/workspace_setting";
 
 interface Props {
   className?: string;
@@ -14,6 +16,9 @@ const MobileHeader = (props: Props) => {
   const { className, children } = props;
   const { sm } = useResponsiveWidth();
   const { y: offsetTop } = useWindowScroll();
+  const workspaceSettingStore = useWorkspaceSettingStore();
+  const workspaceGeneralSetting =
+    workspaceSettingStore.getWorkspaceSettingByKey(WorkspaceSettingKey.GENERAL).generalSetting || WorkspaceGeneralSetting.fromPartial({});
 
   return (
     <div
