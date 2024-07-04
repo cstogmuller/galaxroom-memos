@@ -79,14 +79,14 @@ const UserStatisticsView = () => {
         <div className="w-full flex justify-between items-center">
           <div className="w-auto flex justify-start items-center">
             <Icon.CalendarDays className="w-4 h-auto mr-1" />
-            <span className="block text-base sm:text-sm">{t("memo.days")}</span>
+            <span className="block text-base sm:text-sm">{t("common.days")}</span>
           </div>
           <span>{memoStats.days}</span>
         </div>
         <div className="w-full flex justify-between items-center">
           <div className="w-auto flex justify-start items-center">
             <Icon.Library className="w-4 h-auto mr-1" />
-            <span className="block text-base sm:text-sm">{t("memo.memos")}</span>
+            <span className="block text-base sm:text-sm">{t("common.memos")}</span>
           </div>
           {isRequesting ? <Icon.Loader className="animate-spin w-4 h-auto text-gray-400" /> : <span className="">{memoAmount}</span>}
         </div>
