@@ -205,6 +205,37 @@ func (s *APIV1Service) GetMemo(ctx context.Context, request *v1pb.GetMemoRequest
 	return memoMessage, nil
 }
 
+//nolint:all
+func (s *APIV1Service) GetMemoByUid(ctx context.Context, request *v1pb.GetMemoByUidRequest) (*v1pb.Memo, error) {
+	memo, err := s.Store.GetMemo(ctx, &store.FindMemo{
+		UID: &request.Uid,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if memo == nil {
+		return nil, status.Errorf(codes.NotFound, "memo not found")
+	}
+	if memo.Visibility != store.Public {
+		user, err := s.GetCurrentUser(ctx)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to get user")
+		}
+		if user == nil {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
+		if memo.Visibility == store.Private && memo.CreatorID != user.ID {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
+	}
+
+	memoMessage, err := s.convertMemoFromStore(ctx, memo)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert memo")
+	}
+	return memoMessage, nil
+}
+
 func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoRequest) (*v1pb.Memo, error) {
 	id, err := ExtractMemoIDFromName(request.Memo.Name)
 	if err != nil {
@@ -271,10 +302,10 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 		} else if path == "row_status" {
 			rowStatus := convertRowStatusToStore(request.Memo.RowStatus)
 			update.RowStatus = &rowStatus
-		} else if path == "created_ts" {
+		} else if path == "create_time" {
 			createdTs := request.Memo.CreateTime.AsTime().Unix()
 			update.CreatedTs = &createdTs
-		} else if path == "display_ts" {
+		} else if path == "display_time" {
 			displayTs := request.Memo.DisplayTime.AsTime().Unix()
 			memoRelatedSetting, err := s.Store.GetWorkspaceMemoRelatedSetting(ctx)
 			if err != nil {
@@ -968,9 +999,6 @@ func (s *APIV1Service) buildMemoFindWithFilter(ctx context.Context, find *store.
 			}
 			find.CreatorID = &user.ID
 		}
-		if filter.UID != nil {
-			find.UID = filter.UID
-		}
 		if filter.RowStatus != nil {
 			find.RowStatus = filter.RowStatus
 		}
@@ -1059,7 +1087,6 @@ type SearchMemosFilter struct {
 	DisplayTimeBefore  *int64
 	DisplayTimeAfter   *int64
 	Creator            *string
-	UID                *string
 	RowStatus          *store.RowStatus
 	Random             bool
 	Limit              *int
@@ -1122,9 +1149,6 @@ func findSearchMemosField(callExpr *expr.Expr_Call, filter *SearchMemosFilter) {
 			} else if idExpr.Name == "creator" {
 				creator := callExpr.Args[1].GetConstExpr().GetStringValue()
 				filter.Creator = &creator
-			} else if idExpr.Name == "uid" {
-				uid := callExpr.Args[1].GetConstExpr().GetStringValue()
-				filter.UID = &uid
 			} else if idExpr.Name == "row_status" {
 				rowStatus := store.RowStatus(callExpr.Args[1].GetConstExpr().GetStringValue())
 				filter.RowStatus = &rowStatus
