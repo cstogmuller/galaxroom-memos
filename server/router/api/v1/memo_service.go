@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"slices"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/cel-go/cel"
 	"github.com/lithammer/shortuuid/v4"
@@ -15,6 +16,7 @@ import (
 	"github.com/usememos/gomark/ast"
 	"github.com/usememos/gomark/parser"
 	"github.com/usememos/gomark/parser/tokenizer"
+	"github.com/usememos/gomark/renderer"
 	"github.com/usememos/gomark/restore"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	"google.golang.org/grpc/codes"
@@ -49,7 +51,7 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get workspace memo related setting")
 	}
-	if workspaceMemoRelatedSetting.DisallowPublicVisible && create.Visibility == store.Public {
+	if workspaceMemoRelatedSetting.DisallowPublicVisibility && create.Visibility == store.Public {
 		return nil, status.Errorf(codes.PermissionDenied, "disable public memos system setting is enabled")
 	}
 	contentLengthLimit, err := s.getContentLengthLimit(ctx)
@@ -295,7 +297,7 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 				return nil, status.Errorf(codes.Internal, "failed to get workspace memo related setting")
 			}
 			visibility := convertVisibilityToStore(request.Memo.Visibility)
-			if workspaceMemoRelatedSetting.DisallowPublicVisible && visibility == store.Public {
+			if workspaceMemoRelatedSetting.DisallowPublicVisibility && visibility == store.Public {
 				return nil, status.Errorf(codes.PermissionDenied, "disable public memos system setting is enabled")
 			}
 			update.Visibility = &visibility
@@ -599,7 +601,7 @@ func (s *APIV1Service) ExportMemos(ctx context.Context, request *v1pb.ExportMemo
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to convert memo")
 		}
-		file, err := writer.Create(time.Unix(memo.CreatedTs, 0).Format(time.RFC3339) + "-" + string(memo.Visibility) + ".md")
+		file, err := writer.Create(time.Unix(memo.CreatedTs, 0).Format(time.RFC3339) + "-" + memo.UID + "-" + string(memo.Visibility) + ".md")
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "Failed to create memo file")
 		}
@@ -869,6 +871,11 @@ func (s *APIV1Service) convertMemoFromStore(ctx context.Context, memo *store.Mem
 		return nil, errors.Wrap(err, "failed to parse content")
 	}
 
+	snippet, err := getMemoContentSnippet(memo.Content)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get memo content snippet")
+	}
+
 	memoMessage := &v1pb.Memo{
 		Name:        name,
 		Uid:         memo.UID,
@@ -878,6 +885,7 @@ func (s *APIV1Service) convertMemoFromStore(ctx context.Context, memo *store.Mem
 		UpdateTime:  timestamppb.New(time.Unix(memo.UpdatedTs, 0)),
 		DisplayTime: timestamppb.New(time.Unix(displayTs, 0)),
 		Content:     memo.Content,
+		Snippet:     snippet,
 		Nodes:       convertFromASTNodes(nodes),
 		Visibility:  convertVisibilityFromStore(memo.Visibility),
 		Pinned:      memo.Pinned,
@@ -1285,4 +1293,36 @@ func convertMemoToWebhookPayload(memo *v1pb.Memo) (*v1pb.WebhookRequestPayload, 
 		CreateTime: timestamppb.New(time.Now()),
 		Memo:       memo,
 	}, nil
+}
+
+func getMemoContentSnippet(content string) (string, error) {
+	nodes, err := parser.Parse(tokenizer.Tokenize(content))
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse content")
+	}
+
+	plainText := renderer.NewStringRenderer().Render(nodes)
+	if len(plainText) > 100 {
+		return substring(plainText, 100) + "...", nil
+	}
+	return plainText, nil
+}
+
+func substring(s string, length int) string {
+	if length <= 0 {
+		return ""
+	}
+
+	runeCount := 0
+	byteIndex := 0
+	for byteIndex < len(s) {
+		_, size := utf8.DecodeRuneInString(s[byteIndex:])
+		byteIndex += size
+		runeCount++
+		if runeCount == length {
+			break
+		}
+	}
+
+	return s[:byteIndex]
 }
