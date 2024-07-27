@@ -1,6 +1,6 @@
 import { Button, Input } from "@mui/joy";
 import { ClientError } from "nice-grpc-web";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
 import AppearanceSelect from "@/components/AppearanceSelect";
@@ -23,12 +23,6 @@ const SignUp = () => {
   const actionBtnLoadingState = useLoading(false);
   const workspaceGeneralSetting =
     workspaceSettingStore.getWorkspaceSettingByKey(WorkspaceSettingKey.GENERAL).generalSetting || WorkspaceGeneralSetting.fromPartial({});
-
-  useEffect(() => {
-    if (!commonContext.profile.public) {
-      toast.error("Sign up is not allowed.");
-    }
-  }, []);
 
   const handleLocaleSelectChange = (locale: Locale) => {
     commonContext.setLocale(locale);

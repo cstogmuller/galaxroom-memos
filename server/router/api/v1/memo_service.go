@@ -491,61 +491,6 @@ func (s *APIV1Service) ListMemoComments(ctx context.Context, request *v1pb.ListM
 	return response, nil
 }
 
-func (s *APIV1Service) GetUserMemosStats(ctx context.Context, request *v1pb.GetUserMemosStatsRequest) (*v1pb.GetUserMemosStatsResponse, error) {
-	userID, err := ExtractUserIDFromName(request.Name)
-	if err != nil {
-		return nil, errors.Wrap(err, "invalid user name")
-	}
-	user, err := s.Store.GetUser(ctx, &store.FindUser{
-		ID: &userID,
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get user")
-	}
-	if user == nil {
-		return nil, status.Errorf(codes.NotFound, "user not found")
-	}
-
-	normalRowStatus := store.Normal
-	memoFind := &store.FindMemo{
-		CreatorID:       &user.ID,
-		RowStatus:       &normalRowStatus,
-		ExcludeComments: true,
-		ExcludeContent:  true,
-	}
-	if err := s.buildMemoFindWithFilter(ctx, memoFind, request.Filter); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "failed to build find memos with filter")
-	}
-
-	memos, err := s.Store.ListMemos(ctx, memoFind)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to list memos: %v", err)
-	}
-
-	location, err := time.LoadLocation(request.Timezone)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "invalid timezone location")
-	}
-
-	workspaceMemoRelatedSetting, err := s.Store.GetWorkspaceMemoRelatedSetting(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get workspace memo related setting")
-	}
-	stats := make(map[string]int32)
-	for _, memo := range memos {
-		displayTs := memo.CreatedTs
-		if workspaceMemoRelatedSetting.DisplayWithUpdateTime {
-			displayTs = memo.UpdatedTs
-		}
-		stats[time.Unix(displayTs, 0).In(location).Format("2006-01-02")]++
-	}
-
-	response := &v1pb.GetUserMemosStatsResponse{
-		Stats: stats,
-	}
-	return response, nil
-}
-
 func (s *APIV1Service) ExportMemos(ctx context.Context, request *v1pb.ExportMemosRequest) (*v1pb.ExportMemosResponse, error) {
 	normalRowStatus := store.Normal
 	memoFind := &store.FindMemo{
@@ -614,14 +559,28 @@ func (s *APIV1Service) ListMemoProperties(ctx context.Context, request *v1pb.Lis
 		return nil, status.Errorf(codes.Internal, "failed to list memos")
 	}
 
-	properties := []*v1pb.MemoProperty{}
+	workspaceMemoRelatedSetting, err := s.Store.GetWorkspaceMemoRelatedSetting(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get workspace memo related setting")
+	}
+
+	entities := []*v1pb.MemoPropertyEntity{}
 	for _, memo := range memos {
-		if memo.Payload.Property != nil {
-			properties = append(properties, convertMemoPropertyFromStore(memo.Payload.Property))
+		displayTs := memo.CreatedTs
+		if workspaceMemoRelatedSetting.DisplayWithUpdateTime {
+			displayTs = memo.UpdatedTs
 		}
+		entity := &v1pb.MemoPropertyEntity{
+			Name:        fmt.Sprintf("%s%d", MemoNamePrefix, memo.ID),
+			DisplayTime: timestamppb.New(time.Unix(displayTs, 0)),
+		}
+		if memo.Payload.Property != nil {
+			entity.Property = convertMemoPropertyFromStore(memo.Payload.Property)
+		}
+		entities = append(entities, entity)
 	}
 	return &v1pb.ListMemoPropertiesResponse{
-		Properties: properties,
+		Entities: entities,
 	}, nil
 }
 
@@ -711,7 +670,7 @@ func (s *APIV1Service) RenameMemoTag(ctx context.Context, request *v1pb.RenameMe
 
 	memoFind := &store.FindMemo{
 		CreatorID:       &user.ID,
-		PayloadFind:     &store.FindMemoPayload{Tag: &request.OldTag},
+		PayloadFind:     &store.FindMemoPayload{TagSearch: []string{request.OldTag}},
 		ExcludeComments: true,
 	}
 	if (request.Parent) != "memos/-" {
@@ -765,7 +724,7 @@ func (s *APIV1Service) DeleteMemoTag(ctx context.Context, request *v1pb.DeleteMe
 
 	memoFind := &store.FindMemo{
 		CreatorID:       &user.ID,
-		PayloadFind:     &store.FindMemoPayload{Tag: &request.Tag},
+		PayloadFind:     &store.FindMemoPayload{TagSearch: []string{request.Tag}},
 		ExcludeContent:  true,
 		ExcludeComments: true,
 	}
@@ -928,11 +887,11 @@ func (s *APIV1Service) buildMemoFindWithFilter(ctx context.Context, find *store.
 		if len(filter.Visibilities) > 0 {
 			find.VisibilityList = filter.Visibilities
 		}
-		if filter.Tag != nil {
+		if filter.TagSearch != nil {
 			if find.PayloadFind == nil {
 				find.PayloadFind = &store.FindMemoPayload{}
 			}
-			find.PayloadFind.Tag = filter.Tag
+			find.PayloadFind.TagSearch = filter.TagSearch
 		}
 		if filter.OrderByPinned {
 			find.OrderByPinned = filter.OrderByPinned
@@ -1039,7 +998,7 @@ func (s *APIV1Service) getContentLengthLimit(ctx context.Context) (int, error) {
 var MemoFilterCELAttributes = []cel.EnvOption{
 	cel.Variable("content_search", cel.ListType(cel.StringType)),
 	cel.Variable("visibilities", cel.ListType(cel.StringType)),
-	cel.Variable("tag", cel.StringType),
+	cel.Variable("tag_search", cel.ListType(cel.StringType)),
 	cel.Variable("order_by_pinned", cel.BoolType),
 	cel.Variable("display_time_before", cel.IntType),
 	cel.Variable("display_time_after", cel.IntType),
@@ -1058,7 +1017,7 @@ var MemoFilterCELAttributes = []cel.EnvOption{
 type MemoFilter struct {
 	ContentSearch      []string
 	Visibilities       []store.Visibility
-	Tag                *string
+	TagSearch          []string
 	OrderByPinned      bool
 	DisplayTimeBefore  *int64
 	DisplayTimeAfter   *int64
@@ -1110,9 +1069,13 @@ func findMemoField(callExpr *expr.Expr_Call, filter *MemoFilter) {
 					visibilities = append(visibilities, store.Visibility(value))
 				}
 				filter.Visibilities = visibilities
-			} else if idExpr.Name == "tag" {
-				tag := callExpr.Args[1].GetConstExpr().GetStringValue()
-				filter.Tag = &tag
+			} else if idExpr.Name == "tag_search" {
+				tagSearch := []string{}
+				for _, expr := range callExpr.Args[1].GetListExpr().GetElements() {
+					value := expr.GetConstExpr().GetStringValue()
+					tagSearch = append(tagSearch, value)
+				}
+				filter.TagSearch = tagSearch
 			} else if idExpr.Name == "order_by_pinned" {
 				value := callExpr.Args[1].GetConstExpr().GetBoolValue()
 				filter.OrderByPinned = value
